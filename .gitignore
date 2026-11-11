@@ -1,0 +1,48 @@
+# Credentials
+**/.env
+**/.env.*
+!**/.env.example
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore
+**/key.properties
+
+# Uploaded photos, local results and logs
+**/static/uploads/
+**/static/crops/
+**/static/tryon/
+**/run_logs/
+*.log
+
+# Environments, caches and downloaded model weights
+**/.venv/
+**/venv/
+**/__pycache__/
+*.py[cod]
+**/.pytest_cache/
+**/.model_cache/
+*.pt
+*.safetensors
+*.onnx
+
+# Editor and machine-specific settings
+**/.idea/
+**/.vscode/
+*.iml
+.DS_Store
+
+# Flutter build and signing output
+**/.dart_tool/
+**/build/
+**/releases/
+**/.gradle/
+**/.flutter-plugins-dependencies
+**/local.properties
+**/Pods/
+**/.symlinks/
+**/ephemeral/
+**/xcuserdata/
+*.apk
+*.aab

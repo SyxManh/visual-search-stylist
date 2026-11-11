@@ -1,0 +1,8 @@
+* text=auto
+*.py text eol=lf
+*.dart text eol=lf
+*.js text eol=lf
+*.cjs text eol=lf
+*.md text eol=lf
+**/gradlew text eol=lf
+*.bat text eol=crlf

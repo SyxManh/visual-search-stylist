@@ -1,0 +1,35 @@
+<style>
+    .advisor-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin:16px 0; }
+    .advisor-fields input, .advisor-fields select { width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; margin-top:6px; }
+    .advisor-result { white-space:pre-wrap; line-height:1.7; margin-top:16px; padding:16px; background:#eef2ff; border-radius:10px; overflow-wrap:anywhere; }
+    .palette-list { display:flex; gap:8px; flex-wrap:wrap; margin:12px 0; }
+    .palette-chip { display:inline-flex; align-items:center; gap:6px; padding:8px 10px; border:1px solid #e2e8f0; border-radius:20px; background:#fff; font-size:13px; }
+    .palette-swatch { display:inline-block; width:20px; height:20px; border-radius:50%; border:1px solid #cbd5e1; }
+    .advisor-note { font-size:13px; color:#64748b; line-height:1.6; margin:10px 0; }
+</style>
+<section class="card" id="advisorCard" style="margin:20px 0;">
+    <h2 style="font-size:22px;">Tư vấn phong cách & phong thủy</h2>
+    <p style="margin:10px 0;line-height:1.6;">AI kết hợp ảnh, chiều cao, cân nặng và sở thích để gợi ý phom, cách phối màu và ba bộ đồ phù hợp.</p>
+    <label for="advicePhoto"><strong>Chọn ảnh để AI tư vấn</strong></label>
+    <input type="file" id="advicePhoto" accept="image/*" onchange="resetStyleAdvice()" style="display:block;margin:10px 0;max-width:100%;">
+    <p class="advisor-note">Nên chọn ảnh toàn thân rõ nét. Nếu đã chọn ảnh toàn thân ở khung thử đồ, có thể dùng lại ảnh đó.</p>
+    <div class="advisor-fields">
+        <label>Chiều cao (cm)<input id="adviceHeight" type="number" inputmode="decimal" min="50" max="250" step="0.1" placeholder="Ví dụ: 170" oninput="resetStyleAdvice()"></label>
+        <label>Cân nặng (kg)<input id="adviceWeight" type="number" inputmode="decimal" min="5" max="350" step="0.1" placeholder="Ví dụ: 65" oninput="resetStyleAdvice()"></label>
+        <label>Dịp mặc<select id="adviceOccasion" onchange="resetStyleAdvice()"><option value="daily">Đi học / hằng ngày</option><option value="work">Đi làm</option><option value="outing">Đi chơi</option><option value="event">Dự tiệc / sự kiện</option></select></label>
+        <label>Phong cách bạn thích<select id="advicePreference" onchange="resetStyleAdvice()"><option value="minimal">Tối giản</option><option value="smart_casual">Lịch sự thoải mái</option><option value="streetwear">Streetwear</option><option value="elegant">Thanh lịch</option><option value="sporty">Năng động</option></select></label>
+    </div>
+    <label style="display:block;margin:12px 0;"><input type="checkbox" id="withFengShui" onchange="toggleFengShui()"> Thêm gợi ý phong thủy (tùy chọn)</label>
+    <div id="fengShuiInputs" class="hidden" style="background:#fff7ed;padding:14px;border-radius:10px;">
+        <label for="adviceBirth">Ngày sinh dương lịch</label>
+        <input type="date" id="adviceBirth" min="1900-01-01" onchange="resetStyleAdvice(); document.getElementById('fengShuiResult').classList.add('hidden');" style="display:block;padding:10px;margin:8px 0;max-width:100%;">
+        <button type="button" class="btn-primary" id="fengShuiButton" onclick="requestStyleAdvice(false)">Xem màu phong thủy, không gọi AI</button>
+        <p class="advisor-note">Ngày sinh được tra tại máy chủ của bạn. AI chỉ nhận nhóm màu, không nhận ngày sinh đầy đủ.</p>
+    </div>
+    <label style="display:block;margin:16px 0;font-size:14px;line-height:1.5;"><input type="checkbox" id="adviceConsent"> Tôi đồng ý gửi ảnh, chiều cao và cân nặng tới Cloudflare để nhận tư vấn AI. Lượt tư vấn dùng chung hạn mức Workers AI.</label>
+    <button class="btn-primary" id="adviceButton" onclick="requestStyleAdvice(true)">Nhận tư vấn AI</button>
+    <p id="adviceStatus" role="status" style="margin:12px 0;line-height:1.5;"></p>
+    <div id="adviceResult" class="advisor-result hidden"></div>
+    <div id="fengShuiResult" class="hidden" style="margin-top:16px;background:#fff7ed;padding:16px;border-radius:10px;"></div>
+    <p class="advisor-note">Số đo và ảnh không xác định chính xác size. Gợi ý phong thủy là cảm hứng theo quan niệm truyền thống, không bảo đảm vận may. Hồ sơ, ảnh tư vấn và ngày sinh không được tự lưu thành lịch sử.</p>
+</section>

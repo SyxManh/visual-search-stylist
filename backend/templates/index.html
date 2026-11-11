@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual E-Commerce Search</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #f8fafc; color: #1e293b; padding: 30px 15px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 25px; }
+        .header h1 { color: #4f46e5; font-size: 28px; margin-bottom: 8px; }
+        .header p { color: #64748b; font-size: 15px; }
+
+        .upload-card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto 25px auto; display: flex; gap: 10px; }
+        .upload-card input { flex: 1; padding: 8px; border: 1px solid #e2e8f0; border-radius: 8px; }
+        .btn-primary { background: #4f46e5; color: #fff; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-primary:hover { background: #4338ca; }
+
+        .grid-layout { display: grid; grid-template-columns: 1fr 1.3fr; gap: 25px; }
+        .card { background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .card-title { font-size: 13px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+
+        #previewImage { max-width: 100%; max-height: 350px; border-radius: 8px; display: block; margin: 0 auto; }
+        .crops-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+        .crop-item { border: 2px solid #e2e8f0; border-radius: 8px; padding: 8px; text-align: center; cursor: pointer; background: #f8fafc; transition: all 0.2s; }
+        .crop-item:hover { border-color: #818cf8; }
+        .crop-item.active { border-color: #4f46e5; background: #eef2ff; box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2); }
+        .crop-item img { width: 100%; height: 75px; object-fit: cover; border-radius: 6px; }
+        .crop-item span { display: block; font-size: 12px; font-weight: 600; margin-top: 6px; text-transform: capitalize; color: #334155; }
+
+        .tabs { display: flex; gap: 8px; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; }
+        .tab-btn { padding: 6px 14px; border: none; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; background: #e2e8f0; color: #475569; transition: 0.2s; }
+        .tab-btn.active { background: #ea580c; color: #fff; }
+
+        .products-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; max-height: 520px; overflow-y: auto; padding-right: 4px; }
+        .product-card { border: 1px solid #f1f5f9; background: #f8fafc; border-radius: 10px; padding: 12px; display: flex; flex-direction: column; justify-content: space-between; transition: 0.2s; }
+        .product-card:hover { border-color: #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .product-card img { width: 100%; height: 130px; object-fit: contain; background: #fff; border-radius: 6px; margin-bottom: 8px; }
+        .product-card h4 { font-size: 12px; line-height: 1.4; height: 34px; overflow: hidden; margin-bottom: 6px; color: #1e293b; }
+        .price { color: #dc2626; font-weight: 700; font-size: 14px; margin-bottom: 8px; }
+        .buy-link { display: inline-block; background: #4f46e5; color: #fff; text-decoration: none; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; text-align: center; }
+        .buy-link:hover { background: #4338ca; }
+
+        .history-section { margin-top: 30px; }
+        .history-list { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; }
+        .history-card { min-width: 160px; max-width: 160px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; background: #fff; position: relative; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
+        .history-card:hover { border-color: #4f46e5; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .history-card img { width: 100%; height: 90px; object-fit: cover; border-radius: 6px; margin-bottom: 6px; }
+        .history-card .label { font-size: 12px; font-weight: 700; color: #1e293b; text-transform: capitalize; }
+        .history-card .time { font-size: 10px; color: #94a3b8; margin-top: 4px; }
+        .btn-del-item { position: absolute; top: 4px; right: 4px; background: rgba(239, 68, 68, 0.9); color: #fff; border: none; width: 20px; height: 20px; border-radius: 50%; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-del-item:hover { background: #dc2626; }
+        .btn-clear-all { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; }
+        .btn-clear-all:hover { background: #fecaca; }
+
+        .hidden { display: none !important; }
+        .spinner { width: 32px; height: 32px; border: 3px solid #e2e8f0; border-top-color: #4f46e5; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 12px auto; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 700px) {
+            .grid-layout { grid-template-columns: 1fr; }
+            .upload-card { flex-wrap: wrap; }
+            .tabs { overflow-x: auto; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Visual Product Search · v1.6.0</h1>
+            <p>Nhận diện đồ vật từ ảnh và tìm sản phẩm trên Shopee, Lazada, Amazon</p>
+            <p style="margin-top:12px;"><a href="#tryonCard">Thử đồ AI</a> · <a href="#advisorCard">Tư vấn phong cách & phong thủy</a></p>
+        </div>
+
+        <div class="upload-card">
+            <input type="file" id="fileInput" accept="image/*">
+            <button onclick="uploadAndDetect()" class="btn-primary" id="btnUpload">Phân tích ảnh</button>
+        </div>
+
+                <div id="tryonCard" class="card" style="margin-top:20px;">
+                    <div class="card-title">Tạo ảnh AI mặc trang phục</div>
+                    <p style="font-size:14px;margin-bottom:12px;">Chọn ảnh toàn thân, thấy rõ trang phục và khuôn mặt. Ảnh tạo là mô phỏng, không dự đoán chính xác size.</p>
+                    <label for="garmentInput"><strong>1. Chọn ảnh trang phục muốn mặc</strong></label>
+                    <input type="file" id="garmentInput" accept="image/*" onchange="uploadTryOnGarment()" style="display:block;margin:8px 0;max-width:100%;">
+                    <p id="garmentStatus" role="status" style="font-size:14px;margin:8px 0;">Chọn ảnh áo/quần/váy riêng hoặc chọn một món từ kết quả phân tích ảnh bên dưới.</p>
+                    <img id="garmentPreview" class="hidden" alt="Trang phục dùng để thử đồ" style="max-width:160px;max-height:150px;object-fit:contain;">
+                    <label for="personInput" style="display:block;margin-top:12px;"><strong>2. Chọn ảnh toàn thân của bạn</strong></label>
+                    <input type="file" id="personInput" accept="image/*" style="display:block;margin:8px 0;max-width:100%;">
+                    <label for="clothType">Loại trang phục</label>
+                    <select id="clothType" style="padding:8px;margin:8px 0;">
+                        <option value="upper">Áo</option>
+                        <option value="lower">Quần / chân váy</option>
+                        <option value="overall">Váy liền / bộ đồ</option>
+                    </select>
+                    <label style="display:block;font-size:14px;margin:12px 0;">
+                        <input type="checkbox" id="tryonConsent">
+                        Tôi đồng ý gửi ảnh toàn thân và ảnh trang phục tới Cloudflare qua máy chủ của mình. Lượt tạo dùng hạn mức Workers AI; gói trả phí có thể phát sinh chi phí khi vượt phần miễn phí. Tôi có quyền sử dụng các ảnh này.
+                    </label>
+                    <button class="btn-primary" id="tryonButton" onclick="createTryOn()" disabled>Tạo ảnh thử đồ</button>
+                    <p id="tryonStatus" role="status" style="margin:12px 0;"></p>
+                    <img id="tryonResult" class="hidden" alt="Ảnh mô phỏng thử đồ bằng Cloudflare" style="max-width:100%;border-radius:8px;">
+                </div>
+
+        {% include "style_advisor.html" %}
+
+        <div id="mainSection" class="grid-layout hidden">
+            <!-- Cột trái: Ảnh & Crops -->
+            <div>
+                <div class="card" style="margin-bottom: 20px;">
+                    <div class="card-title">1. Ảnh gốc</div>
+                    <img id="previewImage" src="">
+                </div>
+                <div class="card">
+                    <div class="card-title">2. Chọn món đồ muốn tìm link</div>
+                    <div id="cropsList" class="crops-grid"></div>
+                </div>
+
+            </div>
+
+            <!-- Cột phải: Kết quả sàn -->
+            <div class="card">
+                <div class="card-title">3. Kết quả tìm kiếm</div>
+                <div class="tabs">
+                    <button onclick="switchTab('all')" class="tab-btn active" id="btn-all">Tất cả</button>
+                    <button onclick="switchTab('shopee')" class="tab-btn" id="btn-shopee">Shopee</button>
+                    <button onclick="switchTab('lazada')" class="tab-btn" id="btn-lazada">Lazada</button>
+                    <button onclick="switchTab('amazon')" class="tab-btn" id="btn-amazon">Amazon</button>
+                    <button onclick="switchTab('others')" class="tab-btn" id="btn-others">Khác</button>
+                </div>
+
+                <div id="loadingIndicator" class="hidden" style="text-align: center; padding: 60px 0; color: #64748b;">
+                    <div class="spinner"></div>
+                    <p style="font-size: 13px;">Đang tìm kiếm link sản phẩm...</p>
+                </div>
+
+                <p id="searchMessage" role="status" style="margin:12px 0;color:#64748b"></p>
+                <button id="retrySearch" class="btn-primary hidden" onclick="retrySearch()">Thử lại</button>
+                <div id="productsContainer" class="products-grid">
+                    <p style="grid-column: span 2; text-align: center; color: #94a3b8; font-size: 13px; margin: 40px 0;">
+                        Hãy bấm vào 1 món đồ ở cột bên trái để hiển thị link.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- KHU VỰC LỊCH SỬ TÌM KIẾM -->
+        <div class="card history-section" id="historySection">
+            <div class="card-title">
+                <span>🕒 Lịch sử tìm kiếm</span>
+                <button onclick="clearAllHistory()" class="btn-clear-all" id="btnClearAll">Xóa tất cả lịch sử</button>
+            </div>
+            <div id="historyList" class="history-list"></div>
+        </div>
+    </div>
+
+    <script>
+        const memoryCache = {};
+        const messages = {};
+        const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+        const safeUrl = value => { try { const u = new URL(value, location.origin); return ['https:', 'http:'].includes(u.protocol) ? escapeHtml(u.href) : ''; } catch { return ''; } };
+        let currentActiveCropPath = null;
+        let activeTab = 'all';
+        let currentSelection = null;
+        let tryonBusy = false;
+
+        function updateTryOn(label) {
+            document.getElementById('tryonCard').classList.remove('hidden');
+            document.getElementById('tryonButton').disabled = tryonBusy || !currentSelection;
+            document.getElementById('clothType').value = label.includes('dress') ? 'overall' : ['skirt','jeans','trousers','pants','shorts'].some(x => label.includes(x)) ? 'lower' : 'upper';
+            document.getElementById('tryonResult').classList.add('hidden');
+            document.getElementById('tryonStatus').textContent = '';
+            document.getElementById('tryonConsent').checked = false;
+            document.getElementById('garmentStatus').textContent = 'Đã chọn trang phục: ' + (label || 'ảnh đầy đủ') + '. Kiểm tra ảnh bên dưới trước khi tạo.';
+            if (currentSelection?.cropUrl) {
+                document.getElementById('garmentPreview').src = safeUrl(currentSelection.cropUrl);
+                document.getElementById('garmentPreview').classList.remove('hidden');
+            }
+        }
+
+        async function uploadTryOnGarment() {
+            const file = document.getElementById('garmentInput').files[0];
+            if (!file || tryonBusy) return;
+            const status = document.getElementById('garmentStatus');
+            if (file.size > 12 * 1024 * 1024) { status.textContent = 'Ảnh trang phục vượt quá 12 MB.'; return; }
+            const form = new FormData(); form.append('file', file);
+            document.getElementById('tryonButton').disabled = true;
+            status.textContent = 'Đang tải ảnh trang phục...';
+            try {
+                const response = await fetch('/upload-garment', {method:'POST', body:form});
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'Không tải được ảnh trang phục.');
+                currentActiveCropPath = data.crop_path;
+                currentSelection = {cropPath:data.crop_path, cropUrl:data.crop_url, label:data.label, element:null};
+                updateTryOn(data.label);
+            } catch (error) { status.textContent = error.message; }
+            finally { document.getElementById('tryonButton').disabled = tryonBusy || !currentSelection; }
+        }
+
+        async function createTryOn() {
+            if (tryonBusy || !currentSelection) return;
+            const file = document.getElementById('personInput').files[0];
+            const status = document.getElementById('tryonStatus');
+            if (!file) { status.textContent = 'Hãy chọn ảnh toàn thân trước.'; return; }
+            if (file.size > 12 * 1024 * 1024) { status.textContent = 'Ảnh vượt quá 12 MB.'; return; }
+            if (!document.getElementById('tryonConsent').checked) { status.textContent = 'Cần xác nhận đồng ý gửi ảnh tới Cloudflare.'; return; }
+            const cropPath = currentSelection.cropPath;
+            const form = new FormData();
+            form.append('person', file);
+            form.append('crop_path', cropPath);
+            form.append('cloth_type', document.getElementById('clothType').value);
+            form.append('consent', 'true');
+            form.append('consent_provider', 'cloudflare');
+            tryonBusy = true;
+            document.getElementById('tryonButton').disabled = true;
+            document.getElementById('tryonResult').classList.add('hidden');
+            status.textContent = 'Đang tạo ảnh bằng Cloudflare, có thể mất vài phút. Đừng gửi lại yêu cầu khi đang xử lý.';
+            try {
+                const response = await fetch('/virtual-try-on', {method:'POST', body:form, signal:AbortSignal.timeout(300000)});
+                const data = await response.json();
+                if (!response.ok || !data.result_url) throw new Error(data.error || 'Không tạo được ảnh.');
+                if (currentActiveCropPath !== cropPath) return;
+                document.getElementById('tryonResult').src = safeUrl(data.result_url);
+                document.getElementById('tryonResult').classList.remove('hidden');
+                status.textContent = 'Đã tạo ảnh mô phỏng. Kết quả có thể khác thực tế.';
+            } catch (error) {
+                if (currentActiveCropPath === cropPath) status.textContent = error.name === 'TimeoutError' ? 'Hết thời gian chờ. Yêu cầu có thể vẫn được tính phí; kiểm tra usage trước khi gửi lại.' : error.message;
+            } finally {
+                tryonBusy = false;
+                document.getElementById('tryonButton').disabled = false;
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', loadHistoryUI);
+
+        async function uploadAndDetect() {
+            const fileInput = document.getElementById('fileInput');
+            if (!fileInput.files[0]) {
+                alert('Vui lòng chọn 1 bức ảnh!');
+                return;
+            }
+
+            const btnUpload = document.getElementById('btnUpload');
+            btnUpload.innerText = 'Đang nhận diện...';
+            btnUpload.disabled = true;
+
+            for (let k in memoryCache) delete memoryCache[k];
+            currentActiveCropPath = null;
+            currentSelection = null;
+            document.getElementById('tryonButton').disabled = true;
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const res = await fetch('/detect-objects', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || "Yêu cầu thất bại");
+
+                document.getElementById('previewImage').src = data.original_image;
+                const cropsList = document.getElementById('cropsList');
+                cropsList.innerHTML = '';
+
+                if (!data.detected_items || data.detected_items.length === 0) {
+                    cropsList.innerHTML = '<p style="grid-column: span 3; font-size: 12px; color: #94a3b8;">Không phát hiện sản phẩm nào.</p>';
+                    return;
+                }
+
+                data.detected_items.forEach((item, index) => {
+                    const btn = document.createElement('div');
+                    btn.className = 'crop-item';
+                    btn.id = `crop-btn-${index}`;
+                    btn.innerHTML = `
+                        <img src="${safeUrl(item.crop_url)}">
+                        <span>${escapeHtml(item.label)}</span>
+                    `;
+                    btn.onclick = () => selectCropItem(item.crop_path, item.crop_url, item.label, btn);
+                    cropsList.appendChild(btn);
+
+                    if (index === 0) {
+                        selectCropItem(item.crop_path, item.crop_url, item.label, btn);
+                    }
+                });
+
+                document.getElementById('mainSection').classList.remove('hidden');
+            } catch (err) {
+                alert('Lỗi khi phân tích ảnh: ' + err);
+            } finally {
+                btnUpload.innerText = 'Phân tích ảnh';
+                btnUpload.disabled = false;
+            }
+        }
+
+        async function selectCropItem(cropPath, cropUrl, label, element) {
+            document.querySelectorAll('.crop-item').forEach(el => el.classList.remove('active'));
+            if (element) element.classList.add('active');
+
+            currentActiveCropPath = cropPath;
+            currentSelection = {cropPath, cropUrl, label, element};
+            updateTryOn(label);
+
+            // Kiểm tra Cache
+            if (memoryCache[cropPath] && Object.values(memoryCache[cropPath]).some(items => items.length)) {
+                document.getElementById('loadingIndicator').classList.add('hidden');
+                renderProducts();
+                return;
+            }
+
+            document.getElementById('productsContainer').innerHTML = '';
+            document.getElementById('loadingIndicator').classList.remove('hidden');
+
+            const formData = new FormData();
+            formData.append('crop_path', cropPath);
+            formData.append('label', label);
+
+            try {
+                const res = await fetch('/search-products', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || "Yêu cầu thất bại");
+
+                const products = data.products || { shopee: [], lazada: [], amazon: [], others: [] };
+                memoryCache[cropPath] = products;
+                messages[cropPath] = data.message || '';
+
+                // Chỉ lưu vào lịch sử khi đã thực hiện tìm link thành công
+                if (data.status === 'ready') saveToHistory({
+                    id: Date.now(),
+                    cropUrl: cropUrl,
+                    cropPath: cropPath,
+                    label: label,
+                    products: products,
+                    message: data.message || '',
+                    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' ' + new Date().toLocaleDateString()
+                });
+
+                if (currentActiveCropPath === cropPath) {
+                    document.getElementById('loadingIndicator').classList.add('hidden');
+                    renderProducts();
+                }
+            } catch (err) {
+                if (currentActiveCropPath === cropPath) {
+                    document.getElementById('loadingIndicator').classList.add('hidden');
+                    document.getElementById('productsContainer').innerHTML = `<p style="grid-column:span 2; color:red; text-align:center;">Lỗi tải dữ liệu: ${escapeHtml(err)}</p>`;
+                }
+            }
+        }
+
+        function retrySearch() {
+            if (!currentSelection) return;
+            const {cropPath, cropUrl, label, element} = currentSelection;
+            delete memoryCache[cropPath];
+            selectCropItem(cropPath, cropUrl, label, element);
+        }
+
+        function switchTab(tab) {
+            activeTab = tab;
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
+            const activeBtn = document.getElementById(`btn-${tab}`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+                if (tab === 'shopee') activeBtn.style.background = '#ea580c';
+                else if (tab === 'lazada') activeBtn.style.background = '#2563eb';
+                else if (tab === 'amazon') activeBtn.style.background = '#f59e0b';
+                else activeBtn.style.background = '#334155';
+            }
+            renderProducts();
+        }
+
+        function renderProducts() {
+            const container = document.getElementById('productsContainer');
+            if (!currentActiveCropPath || !memoryCache[currentActiveCropPath]) return;
+
+            document.getElementById('searchMessage').textContent = messages[currentActiveCropPath] || '';
+            const currentData = memoryCache[currentActiveCropPath];
+            const items = (activeTab === 'all' ? Object.values(currentData).flat() : (currentData[activeTab] || [])).filter(item => item.link_type === 'product');
+            document.getElementById('retrySearch').classList.remove('hidden');
+
+            if (items.length === 0) {
+                container.innerHTML = `<p style="grid-column: span 2; text-align: center; color: #94a3b8; font-size: 13px; margin: 40px 0;">Chưa có sản phẩm tương tự trong mục này. Khi API đã cấu hình, kết quả sẽ hiển thị ngay tại đây.</p>`;
+                return;
+            }
+
+            container.innerHTML = items.map(item => `
+                <div class="product-card">
+                    <div>
+                        <img src="${safeUrl(item.thumbnail)}">
+                        <h4 title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</h4>
+                        <div class="price">${escapeHtml(item.price)}</div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 8px;">
+                        <span style="font-size: 10px; color: #94a3b8; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(item.source)}</span>
+                        <a href="${safeUrl(item.link)}" target="_blank" rel="noopener noreferrer" class="buy-link">Xem sản phẩm ↗</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getHistory() {
+            try { const list = JSON.parse(localStorage.getItem('vsearch_history_v2') || '[]'); return Array.isArray(list) ? list : []; } catch { return []; }
+        }
+
+        function saveToHistory(entry) {
+            let list = getHistory();
+            list = [entry, ...list.filter(x => x.cropPath !== entry.cropPath)].slice(0, 30);
+            localStorage.setItem('vsearch_history_v2', JSON.stringify(list));
+            loadHistoryUI();
+        }
+
+        function loadHistoryUI() {
+            const list = getHistory();
+            const container = document.getElementById('historyList');
+            const clearBtn = document.getElementById('btnClearAll');
+
+            if (list.length === 0) {
+                container.innerHTML = '<p style="color: #94a3b8; font-size: 13px; padding: 10px 0;">Chưa có lịch sử tìm kiếm nào.</p>';
+                clearBtn.style.display = 'none';
+                return;
+            }
+
+            clearBtn.style.display = 'inline-block';
+            container.innerHTML = list.map(item => `
+                <div class="history-card" onclick="restoreFromHistory(${item.id})">
+                    <button class="btn-del-item" onclick="deleteHistoryItem(event, ${item.id})" title="Xóa món này">✕</button>
+                    <img src="${safeUrl(item.cropUrl)}">
+                    <div class="label">${escapeHtml(item.label)}</div>
+                    <div class="time">${escapeHtml(item.time)}</div>
+                </div>
+            `).join('');
+        }
+
+        function restoreFromHistory(id) {
+            const list = getHistory();
+            const found = list.find(x => x.id === id);
+            if (!found) return;
+
+            memoryCache[found.cropPath] = found.products;
+            currentActiveCropPath = found.cropPath;
+            messages[found.cropPath] = found.message || '';
+            currentSelection = {cropPath: found.cropPath, cropUrl: found.cropUrl, label: found.label, element: null};
+            updateTryOn(found.label);
+
+            document.getElementById('mainSection').classList.remove('hidden');
+            document.getElementById('previewImage').src = found.cropUrl;
+            document.getElementById('cropsList').innerHTML = `
+                <div class="crop-item active">
+                    <img src="${safeUrl(found.cropUrl)}">
+                    <span>${escapeHtml(found.label)}</span>
+                </div>
+            `;
+
+            renderProducts();
+            window.scrollTo({ top: 120, behavior: 'smooth' });
+        }
+
+        function deleteHistoryItem(event, id) {
+            event.stopPropagation();
+            let list = getHistory().filter(x => x.id !== id);
+            localStorage.setItem('vsearch_history_v2', JSON.stringify(list));
+            loadHistoryUI();
+        }
+
+        function clearAllHistory() {
+            if (confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử tìm kiếm?')) {
+                localStorage.removeItem('vsearch_history_v2');
+                loadHistoryUI();
+            }
+        }
+    </script>
+    <script src="/static/js/style_advisor.js?v=160"></script>
+</body>
+</html>
